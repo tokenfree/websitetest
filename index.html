@@ -22,10 +22,10 @@
         background: #f9f9f9;
         overflow: hidden;
         position: relative;
-        user-select: none; /* Disable text selection */
-        -webkit-user-select: none; /* For Safari */
-        -moz-user-select: none; /* For Firefox */
-        -ms-user-select: none; /* For Internet Explorer/Edge */
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
     }
     .thumbnail {
         width: 200px;
@@ -139,6 +139,8 @@
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
         max-height: 80vh;
         overflow-y: auto;
+        width: 90%;
+        max-width: 500px;
     }
     .image-list ul {
         list-style-type: none;
@@ -159,16 +161,63 @@
         background: #f1f1f1; 
     }
     .image-list::-webkit-scrollbar-thumb {
-        background-color: #007aff; 
+        background-color: #007aff;
         border-radius: 10px;
         border: 3px solid #f1f1f1;
     }
     .image-list::-webkit-scrollbar-thumb:hover {
-        background-color: #0056b3; 
+        background-color: #0056b3;
+    }
+
+    /* Mobile-specific styles */
+    @media (max-width: 768px) {
+        .thumbnail {
+            width: 150px;
+            height: 150px;
+        }
+        
+        .full-screen img {
+            max-width: 85%;
+            max-height: 85%;
+        }
+
+        .arrow {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 25px;
+            width: 40px;
+            height: 40px;
+        }
+
+        .left-arrow {
+            left: 5px;
+        }
+
+        .right-arrow {
+            right: 5px;
+        }
+
+        .arrow:before {
+            width: 15px;
+            height: 15px;
+        }
+
+        .exit-button {
+            top: 10px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+        }
+
+        .full-screen .index {
+            top: 10px;
+            right: 10px;
+            font-size: 1.2em;
+        }
     }
 </style>
 </head>
 <body>
+<!-- Rest of the HTML and JavaScript remains exactly the same -->
 <img class="thumbnail" src="thumbnail.png"/>
 <div class="upload-button" onclick="document.getElementById('file-input').click()">+</div>
 <input type="file" id="file-input" multiple accept="image/*">
