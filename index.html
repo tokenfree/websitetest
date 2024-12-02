@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link href="favicon.ico" rel="icon" type="image/x-icon"/>
+<title>Photo Gallery</title>
+<style>
+    @font-face {
+        font-family: 'Roboto';
+        src: url('Roboto/Roboto-Regular.ttf') format('truetype');
+    }
+    @font-face {
+        font-family: 'Roboto-Bold';
+        src: url('Roboto/Roboto-Bold.ttf') format('truetype');
+    }
+    body {
+        font-family: 'Roboto', Arial, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        background: #f9f9f9;
+        overflow: hidden;
+        position: relative;
+        user-select: none; /* Disable text selection */
+        -webkit-user-select: none; /* For Safari */
+        -moz-user-select: none; /* For Firefox */
+        -ms-user-select: none; /* For Internet Explorer/Edge */
+    }
+    .thumbnail {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: transform 0.3s ease-in-out;
+    }
+    .thumbnail:hover {
+        transform: scale(1.05);
+    }
+    .upload-button {
+        width: 50px;
+        height: 50px;
+        background: #007bff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2em;
+        color: #fff;
+        cursor: pointer;
+        margin-left: 20px;
+    }
+    .full-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.95);
+    }
+    .full-screen img {
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 50px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    .full-screen .index {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 1.5em;
+        color: #000;
+        background-color: #f5f5f7;
+        padding: 5px 10px;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+    .arrow {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        background: transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        display: none;
+    }
+    .arrow:before {
+        content: '';
+        display: block;
+        width: 20px;
+        height: 20px;
+        border: solid #333;
+        border-width: 0 3px 3px 0;
+        padding: 3px;
+    }
+    .left-arrow {
+        left: 20px;
+        transform: rotate(135deg);
+    }
+    .right-arrow {
+        right: 20px;
+        transform: rotate(-45deg);
+    }
+    .arrow:active {
+        opacity: 0.6;
+    }
+    .exit-button {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        width: 50px;
+        height: 50px;
+        background: url('exit.png') no-repeat;
+        background-size: contain;
+        border: none;
+        outline: none;
+        display: none;
+    }
+    .arrow.hidden {
+        opacity: 0;
+    }
+    #file-input {
+        display: none;
+    }
+    .image-list {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    .image-list ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    .image-list li {
+        cursor: pointer;
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    .image-list li:hover {
+        background-color: #f0f0f0;
+    }
+    .image-list::-webkit-scrollbar {
+        width: 10px;
+    }
+    .image-list::-webkit-scrollbar-track {
+        background: #f1f1f1; 
+    }
+    .image-list::-webkit-scrollbar-thumb {
+        background-color: #007aff; 
+        border-radius: 10px;
+        border: 3px solid #f1f1f1;
+    }
+    .image-list::-webkit-scrollbar-thumb:hover {
+        background-color: #0056b3; 
+    }
+</style>
+</head>
+<body>
+<img class="thumbnail" src="thumbnail.png"/>
+<div class="upload-button" onclick="document.getElementById('file-input').click()">+</div>
+<input type="file" id="file-input" multiple accept="image/*">
+<div class="full-screen">
+    <img src=""/>
+    <div class="index"></div>
+    <div class="exit-button"></div>
+    <div class="arrow left-arrow"></div>
+    <div class="arrow right-arrow"></div>
+</div>
+<div class="image-list" style="display: none;">
+    <ul></ul>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('.full-screen').hide();
+    $('.full-screen .index').hide();
+    var media = [];
+    var fileNames = [];
+    var currentIndex = 0;
+
+    function updateImage() {
+        $('.full-screen img').attr('src', media[currentIndex]).on('load', function() {
+            $('.full-screen .index').text((currentIndex + 1));
+        });
+    }
+
+    $('.thumbnail').click(function() {
+        if (media.length > 0) {
+            updateImage();
+            $('.full-screen').show();
+            $('.arrow, .exit-button, .full-screen .index').show();
+            $('.thumbnail, .upload-button').hide();
+        }
+    });
+
+    $(document).keydown(function(e) {
+        if ($('.full-screen').is(':visible')) {
+            if (e.key === 'ArrowRight') {
+                currentIndex = (currentIndex + 1) % media.length;
+                $('.arrow.left-arrow').addClass('hidden');
+                $('.arrow.right-arrow').removeClass('hidden');
+            } else if (e.key === 'ArrowLeft') {
+                currentIndex = (currentIndex - 1 + media.length) % media.length;
+                $('.arrow.right-arrow').addClass('hidden');
+                $('.arrow.left-arrow').removeClass('hidden');
+            } else if (e.key === 'Escape') {
+                $('.full-screen').hide();
+                $('.full-screen .index').hide();
+                $('.thumbnail, .upload-button').show();
+                $('.thumbnail').attr('src', media[currentIndex]);
+                $('.arrow').removeClass('hidden');
+                return;
+            }
+            updateImage();
+        }
+    });
+
+    $('.arrow.left-arrow').click(function(e) {
+        e.stopPropagation();
+        currentIndex = (currentIndex - 1 + media.length) % media.length;
+        $('.arrow.right-arrow').addClass('hidden');
+        $('.arrow.left-arrow').removeClass('hidden');
+        updateImage();
+    });
+
+    $('.arrow.right-arrow').click(function(e) {
+        e.stopPropagation();
+        currentIndex = (currentIndex + 1) % media.length;
+        $('.arrow.left-arrow').addClass('hidden');
+        $('.arrow.right-arrow').removeClass('hidden');
+        updateImage();
+    });
+
+    $('.arrow.left-arrow').hover(function() {
+        $(this).removeClass('hidden');
+    });
+
+    $('.arrow.right-arrow').hover(function() {
+        $(this).removeClass('hidden');
+    });
+
+    $('.exit-button').click(function() {
+        $('.full-screen').hide();
+        $('.full-screen .index').hide();
+        $('.thumbnail, .upload-button').show();
+        $('.thumbnail').attr('src', media[currentIndex]);
+        $('.arrow').removeClass('hidden');
+    });
+
+    $('.full-screen .index').click(function() {
+        var listHtml = '';
+        for (var i = 0; i < media.length; i++) {
+            listHtml += '<li data-index="' + i + '">' + (i + 1) + '. ' + fileNames[i] + '</li>';
+        }
+        $('.image-list ul').html(listHtml);
+        $('.image-list').show();
+    });
+
+    $('.image-list').on('click', 'li', function() {
+        currentIndex = $(this).data('index');
+        updateImage();
+        $('.image-list').hide();
+    });
+
+    $(document).mouseup(function(e) {
+        var container = $(".image-list");
+        if (!container.is(e.target) && container.has(e.target).length === 0) {
+            container.hide();
+        }
+    });
+
+    $('#file-input').on('change', function(event) {
+        var files = event.target.files;
+        for (var i = 0; i < files.length; i++) {
+            var reader = new FileReader();
+            reader.onload = (function(file) {
+                return function(e) {
+                    media.push(e.target.result);
+                    fileNames.push(file.name);
+                    if (media.length === 1) {
+                        $('.thumbnail').attr('src', e.target.result);
+                    }
+                };
+            })(files[i]);
+            reader.readAsDataURL(files[i]);
+        }
+    });
+});
+</script>
+</body>
+</html>
